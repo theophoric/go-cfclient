@@ -57,6 +57,11 @@ type EventQuery struct {
 
 // EventEntity the actual app event body
 type EventEntity struct {
+	// NOTE :: I know this is ugly. - tw
+	Guid              string `json:"guid,omitempty"`
+	SpaceGuid         string `json:"space_guid"`
+	OrganizationgGuid string `json:"organization_guid"`
+
 	//EventTypes are app.crash, audit.app.start, audit.app.stop, audit.app.update, audit.app.create, audit.app.delete-request
 	EventType string `json:"type"`
 	//The GUID of the actor.
@@ -74,6 +79,7 @@ type EventEntity struct {
 	//Timestamp format "2016-02-26T13:29:44Z". The event creation time.
 	Timestamp time.Time `json:"timestamp"`
 
+	Metadata map[string]interface{} `json:"metadata"`
 	// TODO :: do this for all event types
 	// MetaData  struct {
 	// 	Request struct {
@@ -97,7 +103,6 @@ type EventEntity struct {
 	// 		ExitReason      string  `json:"reason,omitempty"`
 	// 	} `json:"request"`
 	// } `json:"metadata"`
-	Metadata map[string]interface{} `json:"metadata"`
 }
 
 // ListEvents returns all app events based on eventType
@@ -108,7 +113,7 @@ func (c *Client) ListEvents() ([]EventEntity, error) {
 // ListEventsByQuery returns all app events based on eventType and queries
 func (c *Client) ListEventsByQuery(queries []EventQuery) ([]EventEntity, error) {
 
-	var query = "/v2/events?q=order-direction:asc"
+	var query = "?results-per-page=50"
 	//adding the additional queries
 	if queries != nil && len(queries) > 0 {
 		for _, eventQuery := range queries {
@@ -145,8 +150,10 @@ func (c *Client) ListEventsByQuery(queries []EventQuery) ([]EventEntity, error) 
 
 	eventsLen := len(eventResponse.Resources)
 	events := make([]EventEntity, eventsLen)
-	for i := 0; i < eventsLen; i++ {
-		events[i] = eventResponse.Resources[i].Entity
+	for i, resource := range eventResponse.Resources {
+		event := resource.Entity
+		event.Guid = eventResponse.Resources[i].Meta.Guid
+		events[i] = event
 	}
 	return events, nil
 }
