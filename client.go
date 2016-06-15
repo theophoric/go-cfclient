@@ -111,7 +111,7 @@ func NewClient(config *Config) (client *Client, err error) {
 		Scopes:   []string{""},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  endpoint.AuthEndpoint + "/oauth/auth",
-			TokenURL: endpoint.TokenEndpoint + "/oauth/token",
+			TokenURL: endpoint.AuthEndpoint + "/oauth/token",
 		},
 	}
 
