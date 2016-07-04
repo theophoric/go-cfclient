@@ -3,6 +3,7 @@ package cfclient
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"time"
 )
@@ -113,7 +114,7 @@ func (c *Client) ListEvents() ([]EventEntity, error) {
 // ListEventsByQuery returns all app events based on eventType and queries
 func (c *Client) ListEventsByQuery(queries []EventQuery) ([]EventEntity, error) {
 
-	var query = "?results-per-page=50"
+	var query = "/v2/events?results-per-page=50"
 	//adding the additional queries
 	if queries != nil && len(queries) > 0 {
 		for _, eventQuery := range queries {
@@ -131,6 +132,7 @@ func (c *Client) ListEventsByQuery(queries []EventQuery) ([]EventEntity, error) 
 
 	resp, err := c.DoRequest(requ)
 	if err != nil {
+		fmt.Println(1)
 		return nil, err
 	}
 
@@ -145,6 +147,7 @@ func (c *Client) ListEventsByQuery(queries []EventQuery) ([]EventEntity, error) 
 	var eventResponse EventResponse
 	err = json.Unmarshal(resBody, &eventResponse)
 	if err != nil {
+
 		return nil, err
 	}
 
@@ -152,7 +155,7 @@ func (c *Client) ListEventsByQuery(queries []EventQuery) ([]EventEntity, error) 
 	events := make([]EventEntity, eventsLen)
 	for i, resource := range eventResponse.Resources {
 		event := resource.Entity
-		event.Guid = eventResponse.Resources[i].Meta.Guid
+		event.Guid = resource.Meta.Guid
 		events[i] = event
 	}
 	return events, nil
